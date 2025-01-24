@@ -1,91 +1,90 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const todoInput = document.querySelector(".todo-input");
-    const todoButton = document.querySelector(".todo-btn");
-    const todoList = document.querySelector(".todo-list");
-    const themeSelectors = document.querySelectorAll(".theme-selector");
+document.addEventListener('DOMContentLoaded', () => {
+    const todoInput = document.querySelector('.todo-input');
+    const todoButton = document.querySelector('.todo-btn');
+    const todoList = document.querySelector('.todo-list');
+    const themeSelectors = document.querySelectorAll('.theme-selector');
 
-    // Load saved tasks from local storage
+    // Load existing tasks from localStorage
     loadTodos();
 
-    todoButton.addEventListener("click", (e) => {
+    // Add new task event
+    todoButton.addEventListener('click', (e) => {
         e.preventDefault();
-        if (todoInput.value.trim() !== "") {
-            addTodo(todoInput.value);
-            saveTodo(todoInput.value);
-            todoInput.value = "";
+        addTodo(todoInput.value);
+        saveTodos();
+        todoInput.value = '';
+    });
+
+    // Delete or check task
+    todoList.addEventListener('click', (e) => {
+        const item = e.target;
+        if (item.classList.contains('check-btn')) {
+            const todo = item.parentElement;
+            todo.classList.toggle('completed');
+        } else if (item.classList.contains('delete-btn')) {
+            const todo = item.parentElement;
+            todo.remove();
+            saveTodos();
         }
     });
 
-    todoList.addEventListener("click", (e) => {
-        if (e.target.classList.contains("complete-btn")) {
-            const todo = e.target.parentElement;
-            todo.classList.toggle("completed");
-            updateTodoStatus(todo.firstChild.textContent);
-        }
-        if (e.target.classList.contains("delete-btn")) {
-            const todo = e.target.parentElement;
-            removeTodo(todo);
-        }
-    });
-
-    themeSelectors.forEach(selector => {
-        selector.addEventListener("click", () => {
-            document.body.style.backgroundColor = getComputedStyle(selector).backgroundColor;
-            localStorage.setItem("theme", selector.classList[0]);
+    // Theme selection event
+    themeSelectors.forEach(theme => {
+        theme.addEventListener('click', () => {
+            document.body.className = theme.classList[0];
+            localStorage.setItem('theme', theme.classList[0]);
         });
     });
 
-    function addTodo(todoText) {
-        const todoDiv = document.createElement("div");
-        todoDiv.classList.add("todo");
-        const newTodo = document.createElement("li");
-        newTodo.textContent = todoText;
+    // Load theme from localStorage
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.body.className = savedTheme;
+        }
+    }
+    loadTheme();
+
+    // Add a new task
+    function addTodo(task) {
+        if (task.trim() === '') return;
+        const todoDiv = document.createElement('div');
+        todoDiv.classList.add('todo');
+        const newTodo = document.createElement('li');
+        newTodo.innerText = task;
         todoDiv.appendChild(newTodo);
-
-        const completeButton = document.createElement("button");
-        completeButton.innerHTML = "✓";
-        completeButton.classList.add("complete-btn");
-        todoDiv.appendChild(completeButton);
-
-        const deleteButton = document.createElement("button");
-        deleteButton.innerHTML = "🛥";
-        deleteButton.classList.add("delete-btn");
+        const checkButton = document.createElement('button');
+        checkButton.innerHTML = '✔';
+        checkButton.classList.add('check-btn');
+        todoDiv.appendChild(checkButton);
+        const deleteButton = document.createElement('button');
+        deleteButton.innerHTML = '🗑';
+        deleteButton.classList.add('delete-btn');
         todoDiv.appendChild(deleteButton);
-
         todoList.appendChild(todoDiv);
+        saveTodos();
     }
 
-    function saveTodo(todo) {
-        let todos = JSON.parse(localStorage.getItem("todos")) || [];
-        todos.push({ text: todo, completed: false });
-        localStorage.setItem("todos", JSON.stringify(todos));
+    // Save tasks to localStorage
+    function saveTodos() {
+        const todos = [];
+        document.querySelectorAll('.todo').forEach(todo => {
+            todos.push({
+                text: todo.firstChild.innerText,
+                completed: todo.classList.contains('completed')
+            });
+        });
+        localStorage.setItem('todos', JSON.stringify(todos));
     }
 
+    // Load tasks from localStorage
     function loadTodos() {
-        let todos = JSON.parse(localStorage.getItem("todos")) || [];
-        todos.forEach(todo => {
-            addTodo(todo.text);
-            if (todo.completed) {
-                todoList.lastChild.classList.add("completed");
+        const todos = JSON.parse(localStorage.getItem('todos')) || [];
+        todos.forEach(todo => addTodo(todo.text));
+        document.querySelectorAll('.todo').forEach((todoDiv, index) => {
+            if (todos[index].completed) {
+                todoDiv.classList.add('completed');
             }
         });
-
-        const savedTheme = localStorage.getItem("theme");
-        if (savedTheme) {
-            document.body.style.backgroundColor = getComputedStyle(document.querySelector(`.${savedTheme}`)).backgroundColor;
-        }
-    }
-
-    function updateTodoStatus(todoText) {
-        let todos = JSON.parse(localStorage.getItem("todos")) || [];
-        todos = todos.map(todo => todo.text === todoText ? { text: todo.text, completed: !todo.completed } : todo);
-        localStorage.setItem("todos", JSON.stringify(todos));
-    }
-
-    function removeTodo(todoElement) {
-        let todos = JSON.parse(localStorage.getItem("todos")) || [];
-        todos = todos.filter(todo => todo.text !== todoElement.firstChild.textContent);
-        localStorage.setItem("todos", JSON.stringify(todos));
-        todoElement.remove();
     }
 });
