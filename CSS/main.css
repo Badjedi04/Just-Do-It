@@ -66,3 +66,12 @@ body {
     text-decoration: line-through;
     color: gray;
 }
+
+.completed .task-text {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.completed .check-btn {
+    background-color: green;
+}

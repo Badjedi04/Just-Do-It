@@ -1,38 +1,32 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const input = document.querySelector('.todo-input');
-    const button = document.querySelector('.todo-btn');
-    const todoList = document.querySelector('.todo-list');
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("form");
+    const input = document.querySelector(".todo-input");
+    const todoList = document.querySelector(".todo-list");
 
-    button.addEventListener('click', (event) => {
-        event.preventDefault();
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const taskText = input.value.trim();
+        if (taskText === "") return;
 
-        if (input.value.trim() === "") {
-            alert("Please enter a task.");
-            return;
-        }
+        // Create new task element
+        const taskItem = document.createElement("li");
+        taskItem.innerHTML = `
+            <span class="task-text">${taskText}</span>
+            <button class="check-btn"><i class="fas fa-check"></i></button>
+            <button class="delete-btn"><i class="fas fa-trash"></i></button>
+        `;
 
-        const todoDiv = document.createElement('div');
-        todoDiv.classList.add('todo');
-
-        const newTodo = document.createElement('li');
-        newTodo.innerText = input.value;
-        todoDiv.appendChild(newTodo);
-
-        const checkButton = document.createElement('button');
-        checkButton.innerHTML = '<i class="fas fa-check"></i>';
-        checkButton.addEventListener('click', () => {
-            newTodo.classList.toggle('done');
-        });
-        todoDiv.appendChild(checkButton);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
-        deleteButton.addEventListener('click', () => {
-            todoDiv.remove();
-        });
-        todoDiv.appendChild(deleteButton);
-
-        todoList.appendChild(todoDiv);
+        todoList.appendChild(taskItem);
         input.value = "";
+
+        // Add event listener for completion
+        taskItem.querySelector(".check-btn").addEventListener("click", () => {
+            taskItem.classList.toggle("completed");
+        });
+
+        // Add event listener for deletion
+        taskItem.querySelector(".delete-btn").addEventListener("click", () => {
+            todoList.removeChild(taskItem);
+        });
     });
 });
